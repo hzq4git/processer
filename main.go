@@ -5,9 +5,28 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
+	"net/http"
+
+	"github.com/gogf/gf/frame/g"
+	"github.com/gogf/gf/net/ghttp"
 )
 
 func main() {
+	g.Log().Debug("launch")
+
+	s := g.Server()
+	// 定义一个 /health 路由，用于健康检查
+	s.BindHandler("/health", func(r *ghttp.Request) {
+		// 健康检查成功时返回状态码 200 OK
+		r.Response.WriteStatus(http.StatusOK)
+		r.Response.Write("Service is healthy")
+	})
+	// 启动服务器
+	if err := s.Start(); err != nil {
+		g.Log().Fatal("Server start failed: ", err)
+	}
+
 	mqClient := &MqClient{
 		"localhost:8081",
 		"group_id",
@@ -35,7 +54,7 @@ ConsumerLoop:
 		default:
 			msg := mqClient.GetTopic()
 			if msg == "" {
-				fmt.Println("continue")
+				// fmt.Println("continue")
 				continue
 			} else {
 				task := Task{}
@@ -52,4 +71,6 @@ ConsumerLoop:
 		}
 	}
 
+	s.Shutdown()
+	g.Log().Debug("exit")
 }

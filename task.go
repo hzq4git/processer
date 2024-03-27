@@ -1,10 +1,34 @@
 package main
 
+import (
+	"encoding/json"
+)
+
+type Message struct {
+	Intpu_files []struct {
+		Url string `json:"url"`
+	} `json:"intpu_files"`
+
+	Flows []struct {
+		Fn_name    string `json:"fn_name"`
+		Fn_version string `json:"fn_version"`
+		Fn_url     string `json:"args"`
+		Args       struct {
+		} `json:"args"`
+	} `json:"flows"`
+}
+
 type Task struct {
 	localFuncPath string //本地函数路径
+	msg           Message
 }
 
 func (task *Task) Parse(msg string) error {
+	var data Message
+	err := json.Unmarshal([]byte(msg), &data)
+	if err == nil {
+		task.msg = data
+	}
 	return nil
 }
 
